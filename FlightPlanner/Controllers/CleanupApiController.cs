@@ -1,5 +1,4 @@
 ﻿using FlightPlanner.Storage;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FlightPlanner.Controllers
@@ -22,6 +21,5 @@ namespace FlightPlanner.Controllers
             _storage.Clear();
             return Ok();
         }
-
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FlightPlanner.Models;
+﻿using FlightPlanner.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FlightPlanner.Storage;
@@ -34,7 +30,6 @@ namespace FlightPlanner.Controllers
             }
             return Ok(flight);
         }
-
 
         [Route("flights")]
         [HttpPut]
@@ -75,9 +70,6 @@ namespace FlightPlanner.Controllers
             return Created(" ", flight);
         }
 
-
-
-
         [Route("flights/{id}")]
         [HttpDelete]
         public IActionResult DeleteFlight(int id)
@@ -85,8 +77,5 @@ namespace FlightPlanner.Controllers
             _storage.DeleteFlight(id);
             return Ok();
         }
-
-
-
     }
 }

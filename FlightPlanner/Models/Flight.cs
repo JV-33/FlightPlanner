@@ -1,5 +1,4 @@
-﻿using System;
-namespace FlightPlanner.Models
+﻿namespace FlightPlanner.Models
 {
     public class Flight
     {
@@ -16,4 +15,3 @@ namespace FlightPlanner.Models
         public string ArrivalTime { get; set; }
     }
 }
-

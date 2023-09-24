@@ -1,6 +1,4 @@
 ﻿using FlightPlanner.Models;
-using FlightPlanner.Controllers;
-
 
 namespace FlightPlanner.Storage
 {
@@ -8,12 +6,30 @@ namespace FlightPlanner.Storage
     {
         private static List<Flight> _flightStorage = new List<Flight>();
         private static int _id = 0;
+        private static readonly object _lockObj = new object();
 
-        public void AddFlight(Flight flight)
+        public bool AddFlight(Flight flight)
         {
-            flight.ID = _id++;
-            _flightStorage.Add(flight);
+            lock (_lockObj)
+            {
+                var existingFlight = GetExistingFlight(flight);
+                if (existingFlight != null)
+                {
+                    return false;
+                }
 
+                flight.ID = _id++;
+                _flightStorage.Add(flight);
+                return true;
+            }
+        }
+
+        public List<Flight> GetCopyOfFlightStorage()
+        {
+            lock (_lockObj)
+            {
+                return _flightStorage.ToList();
+            }
         }
 
         public void Clear()
@@ -26,53 +42,48 @@ namespace FlightPlanner.Storage
             return _flightStorage.Any(f => f.ID == id);
         }
 
-
         public Flight GetExistingFlight(Flight flight)
         {
-            return _flightStorage.FirstOrDefault(f =>
-                f.From.Country == flight.From.Country &&
-                f.From.City == flight.From.City &&
-                f.From.AirportCode == flight.From.AirportCode &&
-                f.To.Country == flight.To.Country &&
-                f.To.City == flight.To.City &&
-                f.To.AirportCode == flight.To.AirportCode &&
-                f.DepartureTime == flight.DepartureTime
-            );
+            lock (_lockObj)
+            {
+                var flightStorageCopy = _flightStorage.ToList();
+                return flightStorageCopy.FirstOrDefault(f =>
+                    f.From.Country == flight.From.Country &&
+                    f.From.City == flight.From.City &&
+                    f.From.AirportCode == flight.From.AirportCode &&
+                    f.To.Country == flight.To.Country &&
+                    f.To.City == flight.To.City &&
+                    f.To.AirportCode == flight.To.AirportCode &&
+                    f.DepartureTime == flight.DepartureTime
+                );
+            }
         }
 
         public Flight? GetFlight(int id)
         {
             if (_flightStorage.Any(flight => flight.ID == id))
             {
-                return _flightStorage.First(flight => flight.ID == id);
+                return _flightStorage.FirstOrDefault(flight => flight.ID == id);
             }
             return null;
         }
 
         public bool DeleteFlight(int id)
         {
-            if (!FlightExists(id))
-            {
-                return false;
-            }
+            if (_flightStorage == null) return false; 
 
-            var flightToRemove = _flightStorage.First(flight => flight.ID == id);
-            _flightStorage.Remove(flightToRemove);
-            return true;
+            int removedCount = _flightStorage.RemoveAll(flight => flight != null && flight.ID == id);
+            return removedCount > 0;
         }
-
-
-
-
 
         public List<Airport> GetUniqueAirports(string search)
         {
-            var searchLower = search.ToLowerInvariant();
+            var searchLower = search.Trim().ToLowerInvariant(); 
 
             var allAirports = _flightStorage.SelectMany(f => new[] { f.From, f.To })
-                                            .Where(a => a.AirportCode.ToLowerInvariant().Contains(searchLower) ||
-                                                        a.City.ToLowerInvariant().Contains(searchLower) ||
-                                                        a.Country.ToLowerInvariant().Contains(searchLower))
+                                            .Where(a => a.AirportCode.Trim().ToLowerInvariant().Contains(searchLower) ||
+                                                        a.City.Trim().ToLowerInvariant().Contains(searchLower) ||
+                                                        a.Country.Trim().ToLowerInvariant().Contains(searchLower))
                                             .ToList();
 
             var uniqueAirports = allAirports
@@ -83,6 +94,18 @@ namespace FlightPlanner.Storage
             return uniqueAirports;
         }
 
+        public List<Flight> SearchFlights(SearchFlightsRequest request)
+        {
+            return _flightStorage.Where(f =>
+            {
+                if (DateTime.TryParse(f.DepartureTime, out var departureDate))
+                {
+                    return f.From.AirportCode == request.From.AirportCode &&
+                           f.To.AirportCode == request.To.AirportCode &&
+                           departureDate.Date == request.Date.Date;
+                }
+                return false;
+            }).ToList();
+        }
     }
 }
-
