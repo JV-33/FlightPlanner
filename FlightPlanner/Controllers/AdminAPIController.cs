@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FlightPlanner.Storage;
+using System;
 
 
 namespace FlightPlanner.Controllers
@@ -12,7 +13,7 @@ namespace FlightPlanner.Controllers
     public class AdminAPIController : ControllerBase
     {
         private readonly FlightStorage _storage;
-
+        private static readonly object _lockObj = new object();
 
         public AdminAPIController()
         {
@@ -35,38 +36,43 @@ namespace FlightPlanner.Controllers
         [HttpPut]
         public IActionResult PutFlight(Flight flight)
         {
-            if (flight == null)
-                return BadRequest("Missing flight information");
 
-            if (flight.From == null || string.IsNullOrEmpty(flight.From.Country) || string.IsNullOrEmpty(flight.From.City) || string.IsNullOrEmpty(flight.From.AirportCode))
-                return BadRequest("Incomplete 'from' airport information");
+            lock (_lockObj)
+            {
+                Console.WriteLine("Received flight: ", flight);
+                if (flight == null)
+                    return BadRequest("Missing flight information");
 
-            if (flight.To == null || string.IsNullOrEmpty(flight.To.Country) || string.IsNullOrEmpty(flight.To.City) || string.IsNullOrEmpty(flight.To.AirportCode))
-                return BadRequest("Incomplete 'to' airport information");
+                if (flight.From == null || string.IsNullOrEmpty(flight.From.Country) || string.IsNullOrEmpty(flight.From.City) || string.IsNullOrEmpty(flight.From.AirportCode))
+                    return BadRequest("Incomplete 'from' airport information");
 
-            if (string.IsNullOrEmpty(flight.Carrier))
-                return BadRequest("Missing carrier information");
+                if (flight.To == null || string.IsNullOrEmpty(flight.To.Country) || string.IsNullOrEmpty(flight.To.City) || string.IsNullOrEmpty(flight.To.AirportCode))
+                    return BadRequest("Incomplete 'to' airport information");
 
-            if (string.IsNullOrEmpty(flight.DepartureTime))
-                return BadRequest("Missing departure time");
+                if (string.IsNullOrEmpty(flight.Carrier))
+                    return BadRequest("Missing carrier information");
 
-            if (string.IsNullOrEmpty(flight.ArrivalTime))
-                return BadRequest("Missing arrival time");
-            if (flight.From.AirportCode.Trim().Equals(flight.To.AirportCode.Trim(), StringComparison.OrdinalIgnoreCase))
-                return BadRequest("Departure and arrival airports must be different");
+                if (string.IsNullOrEmpty(flight.DepartureTime))
+                    return BadRequest("Missing departure time");
 
-            DateTime departureTime, arrivalTime;
-            if (!DateTime.TryParse(flight.DepartureTime, out departureTime) || !DateTime.TryParse(flight.ArrivalTime, out arrivalTime))
-                return BadRequest("Invalid time format");
+                if (string.IsNullOrEmpty(flight.ArrivalTime))
+                    return BadRequest("Missing arrival time");
+                if (flight.From.AirportCode.Trim().Equals(flight.To.AirportCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                    return BadRequest("Departure and arrival airports must be different");
 
-            if (arrivalTime <= departureTime)
-                return BadRequest("Arrival time must be later than departure time");
+                DateTime departureTime, arrivalTime;
+                if (!DateTime.TryParse(flight.DepartureTime, out departureTime) || !DateTime.TryParse(flight.ArrivalTime, out arrivalTime))
+                    return BadRequest("Invalid time format");
 
-            var existingFlight = _storage.GetExistingFlight(flight);
-            if (existingFlight != null)
-                return Conflict("A flight with the same data already exists");
+                if (arrivalTime <= departureTime)
+                    return BadRequest("Arrival time must be later than departure time");
 
-            _storage.AddFlight(flight);
+                var existingFlight = _storage.GetExistingFlight(flight);
+                if (existingFlight != null)
+                    return Conflict("A flight with the same data already exists");
+
+                _storage.AddFlight(flight);
+            }
             return Created(" ", flight);
         }
 

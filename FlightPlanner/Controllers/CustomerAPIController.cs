@@ -2,6 +2,7 @@
 using FlightPlanner.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace FlightPlanner.Controllers
 {
@@ -10,11 +11,14 @@ namespace FlightPlanner.Controllers
     [ApiController]
     public class CustomerAPIController : ControllerBase
     {
-        private readonly FlightStorage _storage;
 
-        public CustomerAPIController(FlightStorage storage)
+        private readonly FlightStorage _storage;
+        private readonly ILogger<CustomerAPIController> _logger;
+
+        public CustomerAPIController(FlightStorage storage, ILogger<CustomerAPIController> logger)
         {
             _storage = storage;
+            _logger = logger;
         }
 
         [Route("airports")]
@@ -33,17 +37,26 @@ namespace FlightPlanner.Controllers
 
         [HttpPost]
         [Route("flights/search")]
-        public IActionResult SearchFlights([FromBody] SearchFlightsRequest request)
+        public IActionResult SearchFlights(SearchFlightsRequest request)
         {
-            if (string.IsNullOrEmpty(request.From.AirportCode) || string.IsNullOrEmpty(request.To.AirportCode) || request.Date == default)
+            _logger.LogInformation("SearchFlights endpoint hit with From: {From} and To: {To}", request.From, request.To);
+
+            if (string.IsNullOrEmpty(request.From) || string.IsNullOrEmpty(request.To) || request.From == request.To)
             {
+                _logger.LogWarning("Invalid Request: Missing required fields. From: {From}, To: {To}", request.From, request.To);
                 return BadRequest(new { Error = "Invalid Request: Missing required fields." });
             }
 
-            var flights = _storage.SearchFlights(request);
-
-            return Ok(new { page = 0, totalItems = flights?.Count ?? 0, items = flights ?? new List<Flight>() });
-
+            try
+            {
+                var flights = _storage.SearchFlights(request);
+                return Ok(new { page = 0, totalItems = flights?.Count ?? 0, items = flights ?? new List<Flight>() });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while searching flights with From: {From} and To: {To}", request.From, request.To); 
+                throw;
+            }
         }
 
         [Route("flights/{id}")]
@@ -56,5 +69,20 @@ namespace FlightPlanner.Controllers
 
             return Ok(flight);
         }
+
+        [HttpGet]
+        [Route("flights")]
+        public IActionResult GetAllFlights()
+        {
+            var flights = _storage.GetCopyOfFlightStorage();
+            Console.WriteLine($"Number of flights: {flights.Count}");
+            if (flights == null || !flights.Any())
+            {
+                return NotFound("No flights found");
+            }
+            return Ok(flights);
+        }
+
+
     }
 }

@@ -6,27 +6,31 @@ namespace FlightPlanner.Storage
     {
         private static List<Flight> _flightStorage = new List<Flight>();
         private static int _id = 0;
-        private static readonly object _lockObj = new object();
+        //private static readonly object _lockObj = new object();
 
         public bool AddFlight(Flight flight)
         {
-            lock (_lockObj)
+            //lock (_lockObj)
             {
+
                 var existingFlight = GetExistingFlight(flight);
                 if (existingFlight != null)
                 {
+                    Console.WriteLine($"Flight already exists: {existingFlight.ID}");
                     return false;
                 }
 
                 flight.ID = _id++;
                 _flightStorage.Add(flight);
+                Console.WriteLine($"Flight added: {flight.ID}");
                 return true;
             }
         }
 
+
         public List<Flight> GetCopyOfFlightStorage()
         {
-            lock (_lockObj)
+            //lock (_lockObj)
             {
                 return _flightStorage.ToList();
             }
@@ -44,10 +48,10 @@ namespace FlightPlanner.Storage
 
         public Flight GetExistingFlight(Flight flight)
         {
-            lock (_lockObj)
+            //lock (_lockObj)
             {
-                var flightStorageCopy = _flightStorage.ToList();
-                return flightStorageCopy.FirstOrDefault(f =>
+                //var flightStorageCopy = _flightStorage.ToList();
+                return _flightStorage.FirstOrDefault(f =>
                     f.From.Country == flight.From.Country &&
                     f.From.City == flight.From.City &&
                     f.From.AirportCode == flight.From.AirportCode &&
@@ -98,13 +102,11 @@ namespace FlightPlanner.Storage
         {
             return _flightStorage.Where(f =>
             {
-                if (DateTime.TryParse(f.DepartureTime, out var departureDate))
-                {
-                    return f.From.AirportCode == request.From.AirportCode &&
-                           f.To.AirportCode == request.To.AirportCode &&
-                           departureDate.Date == request.Date.Date;
-                }
-                return false;
+                
+                    return f.From.AirportCode == request.From &&
+                           f.To.AirportCode == request.To &&
+                           f.DepartureTime.Contains(request.DepartureDate);
+                
             }).ToList();
         }
     }
