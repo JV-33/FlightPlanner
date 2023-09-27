@@ -6,13 +6,10 @@ namespace FlightPlanner.Storage
     {
         private static List<Flight> _flightStorage = new List<Flight>();
         private static int _id = 0;
-        //private static readonly object _lockObj = new object();
 
         public bool AddFlight(Flight flight)
         {
-            //lock (_lockObj)
             {
-
                 var existingFlight = GetExistingFlight(flight);
                 if (existingFlight != null)
                 {
@@ -27,13 +24,9 @@ namespace FlightPlanner.Storage
             }
         }
 
-
         public List<Flight> GetCopyOfFlightStorage()
         {
-            //lock (_lockObj)
-            {
-                return _flightStorage.ToList();
-            }
+            return _flightStorage.ToList();
         }
 
         public void Clear()
@@ -48,9 +41,7 @@ namespace FlightPlanner.Storage
 
         public Flight GetExistingFlight(Flight flight)
         {
-            //lock (_lockObj)
             {
-                //var flightStorageCopy = _flightStorage.ToList();
                 return _flightStorage.FirstOrDefault(f =>
                     f.From.Country == flight.From.Country &&
                     f.From.City == flight.From.City &&

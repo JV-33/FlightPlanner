@@ -2,7 +2,6 @@
 using FlightPlanner.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace FlightPlanner.Controllers
 {
@@ -11,7 +10,6 @@ namespace FlightPlanner.Controllers
     [ApiController]
     public class CustomerAPIController : ControllerBase
     {
-
         private readonly FlightStorage _storage;
         private readonly ILogger<CustomerAPIController> _logger;
 
@@ -82,7 +80,5 @@ namespace FlightPlanner.Controllers
             }
             return Ok(flights);
         }
-
-
     }
 }
