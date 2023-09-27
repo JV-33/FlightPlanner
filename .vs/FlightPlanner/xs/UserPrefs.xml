@@ -1,0 +1,38 @@
+﻿<Properties StartupConfiguration="{71014221-CE24-4637-89A0-50574D725EA6}|http">
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.Workbench ActiveDocument="FlightPlanner/Storage/FlightStorage.cs">
+    <Files>
+      <File FileName="FlightPlanner/Controllers/AdminAPIController.cs" Line="5" Column="1" />
+      <File FileName="FlightPlanner/Controllers/CleanupApiController.cs" Line="25" Column="2" />
+      <File FileName="FlightPlanner/Controllers/CustomerAPIController.cs" Line="82" Column="10" />
+      <File FileName="FlightPlanner/appsettings.json" />
+      <File FileName="FlightPlanner/Storage/FlightStorage.cs" Line="45" Column="1" />
+      <File FileName="FlightPlanner/Models/SearchFlightsRequest.cs" Line="9" Column="2" />
+      <File FileName="FlightPlanner/Models/PageResultT.cs" Line="9" Column="2" />
+      <File FileName="FlightPlanner/Models/Airport.cs" Line="14" Column="2" />
+      <File FileName="FlightPlanner/Models/Flight.cs" Line="17" Column="2" />
+      <File FileName="FlightPlanner/Program.cs" Line="21" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="FlightPlanner">
+            <Node name="FlightPlanner">
+              <Node name="Models" expanded="True" />
+              <Node name="Properties" expanded="True" />
+              <Node name="Storage">
+                <Node name="FlightStorage.cs" selected="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.ItemProperties.FlightPlanner PreferredExecutionTarget="/Applications/Google Chrome.app" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
